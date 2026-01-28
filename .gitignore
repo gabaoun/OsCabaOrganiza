@@ -1,7 +1,18 @@
+# Python
 __pycache__/
-*.pyc
-.DS_Store
+*.py[cod]
+*$py.class
+venv/
+.env
+
+# PyInstaller
+build/
+dist/
+*.spec
+
+# IDEs
 .vscode/
 .idea/
-venv/
-env/
+
+# Projeto
+undo_log.json

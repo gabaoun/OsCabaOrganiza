@@ -1,82 +1,65 @@
-# 📂 OsCabaOrganiza
+# 🚀 OsCabaOrganiza - Organizador de Arquivos Supremo
 
-> **Automação de arquivos profissional, paralela e segura.**
+[![Python](https://img.shields.io/badge/Python-3.13+-blue.svg)](https://www.python.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-O **OsCabaOrganiza** é uma ferramenta de engenharia de software projetada para transformar o caos de diretórios em ordem estruturada. Diferente de scripts simples, esta aplicação utiliza **concorrência (Threads)**, **configuração externa** e **arquitetura modular** para lidar com milhares de arquivos de forma eficiente.
+O **OsCabaOrganiza** é uma ferramenta de linha de comando (CLI) profissional desenvolvida em Python para automatizar a organização de arquivos em diretórios bagunçados. Ideal para manter sua pasta de Downloads ou Desktop sempre limpa.
 
----
+![Banner](https://img.shields.io/badge/UI-Rich_Terminal-cyan)
 
-## 🚀 Funcionalidades Avançadas
+## ✨ Funcionalidades
 
-- **⚡ Alta Performance:** Utiliza `ThreadPoolExecutor` para mover arquivos em paralelo, maximizando o uso de I/O.
-- **🛡️ Thread Safety:** Implementação de `Lock` para evitar condições de corrida (Race Conditions) ao renomear arquivos duplicados.
-- **🔄 Recursividade:** Capacidade de vasculhar subpastas (`--recursive`) e trazer arquivos para a raiz organizada.
-- **🧹 Limpeza Automática:** Opcionalmente remove pastas vazias (`--remove-empty`) após a organização.
-- **🙈 Ignora Ocultos:** Protege arquivos de sistema e configurações (como `.git`, `.DS_Store`) por padrão.
-- **🧪 Modo Dry-Run:** Simula toda a operação mostrando logs do que seria feito, sem risco de perda de dados.
+- **📂 Organização Inteligente**: Organize arquivos por extensão ou por data de criação.
+- **🕒 Modo Sentinel (Monitoramento)**: O programa monitora sua pasta em tempo real e organiza novos arquivos instantaneamente.
+- **🔄 Sistema de Desfazer (Undo)**: Cometeu um erro? Desfaça a última organização com um clique.
+- **📊 Relatórios Detalhados**: Veja estatísticas de quantos arquivos foram movidos e o volume de dados processado.
+- **🚀 Performance**: Utiliza Multi-threading para processar milhares de arquivos em segundos.
+- **🎨 UI Moderna**: Interface rica no terminal com barras de progresso e cores vibrantes.
+- **⌨️ Aborto Seguro**: Pressione `ESC` a qualquer momento para interromper a operação com segurança.
 
-## 🛠️ Tecnologias e Padrões
+## 🛠️ Tecnologias Utilizadas
 
-Este projeto demonstra práticas de **Engenharia de Software Sênior**:
+- [Python](https://www.python.org/) - Linguagem base.
+- [Rich](https://github.com/Textualize/rich) - Interface gráfica no terminal.
+- [Watchdog](https://github.com/gorakhargosh/watchdog) - Monitoramento de eventos do sistema de arquivos.
+- [PyInstaller](https://pyinstaller.org/) - Criação do executável standalone.
 
-- **Arquitetura Modular:** Separação clara entre Core (`app/core.py`), Interface (`app/cli.py`) e Configuração.
-- **Type Hinting:** Código 100% tipado para robustez e clareza.
-- **Testes Automatizados:** Suíte de testes unitários (`unittest`) cobrindo cenários de borda e mocks.
-- **Configuração Externa:** Regras de extensão carregadas de `config.json` (Princípio Open/Closed).
-
-## 📦 Instalação e Uso
+## 📦 Como Instalar e Rodar
 
 ### Pré-requisitos
-- Python 3.8+
+- Python 3.13 ou superior instalado.
 
-### Clonar o repositório
-```bash
-git clone https://github.com/gabaoun/OsCabaOrganiza.git
-cd OsCabaOrganiza
-```
+### Passos
+1. **Clone o repositório:**
+   ```bash
+   git clone https://github.com/seu-usuario/OsCabaOrganiza.git
+   cd OsCabaOrganiza
+   ```
 
-### Modo Interativo (GUI/Menu)
-Basta rodar o script e seguir as instruções na tela:
-```bash
-python main.py
-```
+2. **Instale as dependências:**
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-### Modo CLI (Power User)
-Ideal para scripts de servidor ou automação via CRON.
+3. **Execute o programa:**
+   ```bash
+   python main.py
+   ```
 
-**Exemplo 1: Simular organização recursiva**
-```bash
-python main.py --path "C:/Downloads" --mode ext --recursive --dry-run
-```
-
-**Exemplo 2: Organizar por data e limpar pastas vazias**
-```bash
-python main.py --path "C:/Fotos" --mode date --remove-empty --verbose
-```
-
----
-
-## 🧪 Rodando os Testes
-
-Para verificar a integridade da aplicação:
-```bash
-python -m unittest discover tests
-```
-
----
-
-## 📄 Estrutura do Projeto
+## 🏗️ Estrutura do Projeto
 
 ```text
 OsCabaOrganiza/
-├── app/
-│   ├── core.py         # Lógica de negócio (Threads, Locks, File Ops)
-│   ├── cli.py          # Interface CLI e Tratamento de Argumentos
-│   └── utils.py        # Logging e Carregamento de JSON
-├── config.json         # Mapeamento de extensões editável
-├── tests/              # Testes unitários
-└── main.py             # Entry point
+├── app/                # Lógica central e interface
+├── tests/              # Testes automatizados (Unit Testing)
+├── config.json         # Mapeamento de extensões configurável
+├── main.py             # Ponto de entrada
+└── requirements.txt    # Dependências
 ```
 
+## 📄 Licença
+
+Distribuído sob a licença MIT. Veja `LICENSE` para mais informações.
+
 ---
-*Desenvolvido com foco em Clean Code e Scalability.*
+Desenvolvido com ☕ por [Seu Nome/Github]
