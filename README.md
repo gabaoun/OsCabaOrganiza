@@ -5,7 +5,7 @@
 [![Code Style](https://img.shields.io/badge/Code_Style-PEP_8-green.svg)](https://www.python.org/dev/peps/pep-0008/)
 [![Build Status](https://img.shields.io/badge/Build-Passing-brightgreen.svg)]()
 
-> **👨‍💻 Desenvolvido por Gabriel Penha (Gabaoun)** - Engenheiro de Software especializado em automação e soluções inteligentes
+> **👨‍💻 Desenvolvido por Gabriel Penha (Gabaoun)**
 
 **OsCabaOrganiza** é uma ferramenta CLI enterprise-grade desenvolvida em Python para automação inteligente de organização de arquivos. Projetada com padrões de engenharia de software modernos, esta solução demonstra expertise em desenvolvimento de sistemas robustos, concorrência e experiência do usuário em terminal.
 
@@ -111,12 +111,10 @@ OsCabaOrganiza/
 ## 📬 Conecte-se Comigo
 
 **Gabriel Penha (Gabaoun)**
-- 📧 Email: [seu-email@exemplo.com]
-- 💼 LinkedIn: [linkedin.com/in/gabaoun]
+- 📧 Email: [penhagabriellima@gmail.com]
 - 🐙 GitHub: [github.com/gabaoun]
-- 🌐 Portfolio: [seu-portfolio.com]
 
-> **🚀 Disponível para oportunidades**: Engenheiro de Software | Python | Automation | Full-Stack Development
+> **🚀 Disponível para oportunidades**: Python | Automation | Full-Stack Development
 
 ## 📄 Licença
 
