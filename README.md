@@ -1,64 +1,82 @@
 # 📂 OsCabaOrganiza
 
-> **Uma ferramenta simples e eficiente para automação de organização de arquivos.**
+> **Automação de arquivos profissional, paralela e segura.**
 
-Bem-vindo ao **OsCabaOrganiza**! Este projeto nasceu de uma necessidade comum: lidar com pastas de downloads caóticas e diretórios desorganizados. É um script Python projetado para automatizar a triagem de arquivos, movendo-os para pastas categorizadas com base em seu tipo ou data de criação.
-
-Este projeto reflete meu interesse em **automação**, **manipulação de sistemas de arquivos** e criação de ferramentas que resolvem problemas reais do dia a dia.
+O **OsCabaOrganiza** é uma ferramenta de engenharia de software projetada para transformar o caos de diretórios em ordem estruturada. Diferente de scripts simples, esta aplicação utiliza **concorrência (Threads)**, **configuração externa** e **arquitetura modular** para lidar com milhares de arquivos de forma eficiente.
 
 ---
 
-## 🚀 Funcionalidades
+## 🚀 Funcionalidades Avançadas
 
-O script oferece uma interface interativa via terminal, com seleção de pastas via interface gráfica nativa do sistema (Tkinter), permitindo:
+- **⚡ Alta Performance:** Utiliza `ThreadPoolExecutor` para mover arquivos em paralelo, maximizando o uso de I/O.
+- **🛡️ Thread Safety:** Implementação de `Lock` para evitar condições de corrida (Race Conditions) ao renomear arquivos duplicados.
+- **🔄 Recursividade:** Capacidade de vasculhar subpastas (`--recursive`) e trazer arquivos para a raiz organizada.
+- **🧹 Limpeza Automática:** Opcionalmente remove pastas vazias (`--remove-empty`) após a organização.
+- **🙈 Ignora Ocultos:** Protege arquivos de sistema e configurações (como `.git`, `.DS_Store`) por padrão.
+- **🧪 Modo Dry-Run:** Simula toda a operação mostrando logs do que seria feito, sem risco de perda de dados.
 
-- **Organização por Extensão**: Agrupa arquivos em pastas semânticas como `Imagens`, `Documentos`, `Videos`, `Scripts`, entre outros.
-- **Organização por Data**: Cria pastas baseadas na data de criação dos arquivos (formato `DD-MM-YYYY`), ideal para backup de fotos ou logs.
-- **Tratamento de Conflitos**: Renomeia automaticamente arquivos duplicados para evitar sobrescrita acidental.
-- **Segurança**: Ignora o próprio arquivo do script e pastas já existentes para evitar recursão indesejada.
+## 🛠️ Tecnologias e Padrões
 
-## 🛠️ Tecnologias Utilizadas
+Este projeto demonstra práticas de **Engenharia de Software Sênior**:
 
-O projeto foi construído utilizando apenas a **Biblioteca Padrão do Python**, demonstrando como é possível criar soluções robustas sem dependências externas pesadas.
+- **Arquitetura Modular:** Separação clara entre Core (`app/core.py`), Interface (`app/cli.py`) e Configuração.
+- **Type Hinting:** Código 100% tipado para robustez e clareza.
+- **Testes Automatizados:** Suíte de testes unitários (`unittest`) cobrindo cenários de borda e mocks.
+- **Configuração Externa:** Regras de extensão carregadas de `config.json` (Princípio Open/Closed).
 
-- **Python 3+**
-- `os` e `shutil`: Para navegação no sistema de arquivos e movimentação de dados.
-- `tkinter`: Para fornecer uma interface gráfica simples de seleção de diretório.
-- `datetime`: Para manipulação de metadados temporais dos arquivos.
+## 📦 Instalação e Uso
 
-## 📦 Como Usar
+### Pré-requisitos
+- Python 3.8+
 
-1. Certifique-se de ter o Python instalado.
-2. Clone este repositório:
-   ```bash
-   git clone https://github.com/gabaoun/OsCabaOrganiza.git
-   ```
-3. Navegue até a pasta do projeto:
-   ```bash
-   cd OsCabaOrganiza
-   ```
-4. Execute o script:
-   ```bash
-   python main.py
-   ```
-5. Uma janela abrirá para você selecionar a pasta que deseja organizar. Em seguida, escolha a opção desejada no terminal.
+### Clonar o repositório
+```bash
+git clone https://github.com/gabaoun/OsCabaOrganiza.git
+cd OsCabaOrganiza
+```
 
-## 🧠 O que aprendi com este projeto
+### Modo Interativo (GUI/Menu)
+Basta rodar o script e seguir as instruções na tela:
+```bash
+python main.py
+```
 
-Este projeto foi um excelente exercício para consolidar conhecimentos em:
-- **Lógica de Programação**: Estruturação de funções reutilizáveis e fluxo de controle.
-- **Manipulação de Arquivos**: Entendimento prático de caminhos absolutos/relativos e metadados de arquivos.
-- **Tratamento de Erros**: Garantir que o programa continue rodando mesmo se um arquivo estiver em uso ou protegido.
-- **UX Simples**: Combinação de CLI (Linha de Comando) com GUI (Interface Gráfica) para facilitar o uso.
+### Modo CLI (Power User)
+Ideal para scripts de servidor ou automação via CRON.
 
-## 🔜 Próximos Passos
+**Exemplo 1: Simular organização recursiva**
+```bash
+python main.py --path "C:/Downloads" --mode ext --recursive --dry-run
+```
 
-Planejo evoluir esta ferramenta com as seguintes melhorias:
-- [ ] Adicionar um arquivo de configuração (`config.json`) para que o usuário personalize as extensões e pastas.
-- [ ] Implementar uma barra de progresso para pastas com muitos arquivos.
-- [ ] Criar uma interface gráfica completa (GUI) para substituir o menu do terminal.
-- [ ] Adicionar logs de execução para auditoria do que foi movido.
+**Exemplo 2: Organizar por data e limpar pastas vazias**
+```bash
+python main.py --path "C:/Fotos" --mode date --remove-empty --verbose
+```
 
 ---
 
-*Sinta-se à vontade para contribuir, sugerir melhorias ou usar este código para organizar seus próprios arquivos!*
+## 🧪 Rodando os Testes
+
+Para verificar a integridade da aplicação:
+```bash
+python -m unittest discover tests
+```
+
+---
+
+## 📄 Estrutura do Projeto
+
+```text
+OsCabaOrganiza/
+├── app/
+│   ├── core.py         # Lógica de negócio (Threads, Locks, File Ops)
+│   ├── cli.py          # Interface CLI e Tratamento de Argumentos
+│   └── utils.py        # Logging e Carregamento de JSON
+├── config.json         # Mapeamento de extensões editável
+├── tests/              # Testes unitários
+└── main.py             # Entry point
+```
+
+---
+*Desenvolvido com foco em Clean Code e Scalability.*

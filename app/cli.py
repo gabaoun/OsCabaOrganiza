@@ -18,6 +18,8 @@ def main():
     parser.add_argument("--path", type=str, help="Caminho do diretório a ser organizado")
     parser.add_argument("--mode", choices=['ext', 'date'], help="Modo de organização: 'ext' (Extensão) ou 'date' (Data)")
     parser.add_argument("--dry-run", action="store_true", help="Simula a organização sem mover arquivos")
+    parser.add_argument("--recursive", action="store_true", help="Organiza também subpastas (Recursivo)")
+    parser.add_argument("--remove-empty", action="store_true", help="Remove pastas vazias após organizar")
     parser.add_argument("--verbose", action="store_true", help="Mostra logs detalhados")
     
     args = parser.parse_args()
@@ -41,9 +43,9 @@ def main():
             return
 
         if args.mode == 'ext':
-            organizer.organize_by_extension(target_dir)
+            organizer.organize_by_extension(target_dir, recursive=args.recursive, remove_empty=args.remove_empty)
         elif args.mode == 'date':
-            organizer.organize_by_date(target_dir)
+            organizer.organize_by_date(target_dir, recursive=args.recursive, remove_empty=args.remove_empty)
             
     else:
         # Modo Interativo (sem argumentos)
@@ -62,25 +64,28 @@ def main():
             
             choice = input("Opção: ").strip()
             
-            # Pergunta de simulação no modo interativo
-            is_dry = False
-            if choice in ['1', '2']:
-                 sim = input("Apenas simular (Dry Run)? [s/N]: ").strip().lower()
-                 if sim == 's':
-                     organizer.dry_run = True
-                     is_dry = True
-                 else:
-                     organizer.dry_run = False
-
-            if choice == '1':
-                organizer.organize_by_extension(target_dir)
-            elif choice == '2':
-                organizer.organize_by_date(target_dir)
-            elif choice == '3':
+            if choice == '3':
                 break
-            
-            if is_dry:
-                print("\n[INFO] Isso foi apenas uma simulação.")
+
+            if choice in ['1', '2']:
+                # Perguntas Interativas
+                rec_input = input("Incluir subpastas (Recursivo)? [s/N]: ").strip().lower()
+                is_recursive = rec_input == 's'
+                
+                clean_input = input("Remover pastas vazias ao final? [s/N]: ").strip().lower()
+                is_remove_empty = clean_input == 's'
+
+                sim_input = input("Apenas simular (Dry Run)? [s/N]: ").strip().lower()
+                is_dry_run = sim_input == 's'
+                organizer.dry_run = is_dry_run
+
+                if choice == '1':
+                    organizer.organize_by_extension(target_dir, recursive=is_recursive, remove_empty=is_remove_empty)
+                elif choice == '2':
+                    organizer.organize_by_date(target_dir, recursive=is_recursive, remove_empty=is_remove_empty)
+                
+                if is_dry_run:
+                    print("\n[INFO] Isso foi apenas uma simulação.")
 
 if __name__ == "__main__":
     main()
