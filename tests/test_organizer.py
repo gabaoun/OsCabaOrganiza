@@ -3,7 +3,7 @@ import shutil
 import tempfile
 import os
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 
 # Importa do novo pacote
 from app.core import Organizer
@@ -101,6 +101,32 @@ class TestOrganizer(unittest.TestCase):
         self.assertTrue((self.path / "Imagens" / "img.jpg").exists())
         # Pasta original deletada
         self.assertFalse(subfolder.exists())
+
+    @patch('app.core.check_esc_pressed', return_value=True)
+    @patch('app.core.flush_input')
+    @patch('app.core.logger')
+    def test_abort_immediate(self, mock_logger, mock_flush, mock_check_esc):
+        """Testa se o pressionamento de ESC aborta a operação."""
+        # Cria mocks para simular arquivos
+        dummy_files = []
+        for i in range(10):
+            p = MagicMock(spec=Path)
+            p.name = f'file_{i}.txt'
+            p.suffix = '.txt'
+            p.is_file.return_value = True
+            # stat e st_ctime para o modo 'date' se necessário, ou apenas ignora
+            p.stat.return_value.st_ctime = 1000000 
+            dummy_files.append(p)
+        
+        # Mocka _get_files para retornar nossos arquivos falsos
+        with patch.object(self.organizer, '_get_files', return_value=dummy_files):
+            # Mocka _move_single_file para evitar IO real
+            with patch.object(self.organizer, '_move_single_file', return_value="Sucesso") as mock_move:
+                
+                self.organizer.organize_by_extension(Path('.'))
+                
+                # Verifica se a mensagem de aborto foi logada
+                mock_logger.warning.assert_called_with("Operação abortada pelo usuário (ESC pressionado).")
 
 if __name__ == '__main__':
     unittest.main()
