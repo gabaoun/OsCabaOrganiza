@@ -1,6 +1,7 @@
 import argparse
 import sys
 from pathlib import Path
+from typing import Optional
 from tkinter import Tk, filedialog
 from .core import Organizer
 from .utils import load_config, setup_logger
