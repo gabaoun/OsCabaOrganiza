@@ -132,10 +132,51 @@ class Organizer:
         self.undo_manager: Optional[UndoManager] = None
         
         # Estatísticas para relatório
-        self.stats = {"moved": 0, "errors": 0, "bytes": 0}
+        self.stats = {"moved": 0, "errors": 0, "bytes": 0, "extracted": 0}
 
     def _find_folder(self, extension: str) -> str:
         return self.extension_lookup.get(extension.lower(), self.others_folder)
+
+    def _get_archive_extensions(self) -> List[str]:
+        """Retorna lista de extensões suportadas pelo shutil."""
+        extensions = []
+        for format_name, exts, description in shutil.get_unpack_formats():
+            extensions.extend(exts)
+        return extensions
+
+    def _decompress_single_file(self, file_path: Path, base_directory: Path) -> str:
+        """Descompacta um arquivo para uma pasta com seu nome."""
+        try:
+            # Tenta lidar com extensões duplas como .tar.gz
+            folder_name = file_path.stem
+            if file_path.suffix.lower() == '.gz' and Path(folder_name).suffix.lower() == '.tar':
+                folder_name = Path(folder_name).stem
+            elif file_path.suffix.lower() == '.bz2' and Path(folder_name).suffix.lower() == '.tar':
+                folder_name = Path(folder_name).stem
+            elif file_path.suffix.lower() == '.xz' and Path(folder_name).suffix.lower() == '.tar':
+                folder_name = Path(folder_name).stem
+
+            output_folder = base_directory / folder_name
+            
+            if self.dry_run:
+                return f"[SIMULAÇÃO] Descompactaria: '{file_path.name}' para '{folder_name}/'"
+
+            # Cria a pasta de destino
+            output_folder.mkdir(parents=True, exist_ok=True)
+
+            # Descompacta
+            shutil.unpack_archive(str(file_path), str(output_folder))
+
+            with self.lock:
+                self.stats["extracted"] += 1
+                self.stats["bytes"] += file_path.stat().st_size
+            
+            return f"Descompactado: {file_path.name} -> {folder_name}/"
+            
+        except Exception as e:
+            with self.lock:
+                self.stats["errors"] += 1
+            return f"ERRO ao descompactar {file_path.name}: {str(e)}"
 
     def _move_single_file(self, file_path: Path, folder_name: str, base_directory: Path) -> str:
         """Move arquivo, atualiza stats e registra undo."""
@@ -199,7 +240,7 @@ class Organizer:
 
     def organize_by_extension(self, directory: Path, recursive: bool = False, remove_empty: bool = False, progress_callback: Callable = None) -> None:
         self.undo_manager = UndoManager(directory / "undo_log.json")
-        self.stats = {"moved": 0, "errors": 0, "bytes": 0} # Reset stats
+        self.stats = {"moved": 0, "errors": 0, "bytes": 0, "extracted": 0} # Reset stats
         
         files = list(self._get_files(directory, recursive))
         if not files:
@@ -213,6 +254,7 @@ class Organizer:
             
             for future in futures:
                 if check_esc_pressed():
+                    logger.warning("Operação abortada pelo usuário (ESC pressionado).")
                     executor.shutdown(wait=False, cancel_futures=True)
                     return
 
@@ -225,7 +267,7 @@ class Organizer:
 
     def organize_by_date(self, directory: Path, recursive: bool = False, remove_empty: bool = False, progress_callback: Callable = None) -> None:
         self.undo_manager = UndoManager(directory / "undo_log.json")
-        self.stats = {"moved": 0, "errors": 0, "bytes": 0}
+        self.stats = {"moved": 0, "errors": 0, "bytes": 0, "extracted": 0}
 
         files = list(self._get_files(directory, recursive))
         if not files:
@@ -240,6 +282,7 @@ class Organizer:
             
             for future in futures:
                 if check_esc_pressed():
+                    logger.warning("Operação abortada pelo usuário (ESC pressionado).")
                     executor.shutdown(wait=False, cancel_futures=True)
                     return
 
@@ -249,6 +292,40 @@ class Organizer:
 
         if remove_empty:
             self._remove_empty_folders(directory)
+
+    def decompress_files(self, directory: Path, recursive: bool = False, progress_callback: Callable = None) -> None:
+        """Descompacta arquivos em massa."""
+        self.stats = {"moved": 0, "errors": 0, "bytes": 0, "extracted": 0}
+        
+        # Identifica extensões suportadas
+        supported_exts = set(self._get_archive_extensions())
+        
+        # Filtra apenas arquivos que são arquivos compactados suportados
+        all_files = list(self._get_files(directory, recursive))
+        archive_files = [f for f in all_files if ''.join(f.suffixes) in supported_exts or f.suffix in supported_exts]
+        
+        # Fallback simples se a verificação acima falhar para alguns casos complexos, 
+        # verificamos apenas a extensão final contra a lista do shutil
+        if not archive_files:
+             archive_files = [f for f in all_files if f.suffix in supported_exts]
+
+        if not archive_files:
+            return
+
+        with ThreadPoolExecutor() as executor:
+            futures = []
+            for file_path in archive_files:
+                futures.append(executor.submit(self._decompress_single_file, file_path, directory))
+            
+            for future in futures:
+                if check_esc_pressed():
+                    logger.warning("Operação abortada pelo usuário (ESC pressionado).")
+                    executor.shutdown(wait=False, cancel_futures=True)
+                    return
+
+                res = future.result()
+                if progress_callback:
+                    progress_callback()
 
     def _remove_empty_folders(self, directory: Path):
         if self.dry_run:

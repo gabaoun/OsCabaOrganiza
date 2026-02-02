@@ -28,6 +28,7 @@ def show_report(organizer: Organizer, duration: float):
     table.add_column("Valor", style="magenta")
     
     table.add_row("Arquivos Movidos", str(organizer.stats["moved"]))
+    table.add_row("Arquivos Descompactados", str(organizer.stats.get("extracted", 0)))
     table.add_row("Erros", str(organizer.stats["errors"]))
     
     # Formatação de bytes
@@ -47,10 +48,19 @@ def run_organization_with_progress(organizer: Organizer, directory: Path, mode: 
     
     # Contagem prévia (rápida) para definir o total da barra
     with console.status("[bold green]Analisando arquivos..."):
-        total_files = len(list(organizer._get_files(directory, recursive)))
+        all_files = list(organizer._get_files(directory, recursive))
+        if mode == 'decompress':
+            # Filtra apenas arquivos compatíveis com descompactação
+            exts = set(organizer._get_archive_extensions())
+            # Verifica suffix simples e sufixos compostos (ex: .tar.gz)
+            # Nota: a lógica exata deve bater com a do core, aqui é uma aproximação suficiente para a barra
+            total_files = sum(1 for f in all_files if f.suffix in exts or ''.join(f.suffixes) in exts)
+        else:
+            total_files = len(all_files)
     
     if total_files == 0:
-        console.print("[yellow]Nenhum arquivo para organizar.[/yellow]")
+        msg = "Nenhum arquivo compactado encontrado." if mode == 'decompress' else "Nenhum arquivo para organizar."
+        console.print(f"[yellow]{msg}[/yellow]")
         return
 
     start_time = time.time()
@@ -61,7 +71,8 @@ def run_organization_with_progress(organizer: Organizer, directory: Path, mode: 
         BarColumn(),
         TextColumn("[progress.percentage]{task.percentage:>3.0f}%"),
     ) as progress:
-        task = progress.add_task("[green]Organizando...", total=total_files)
+        action_text = "Descompactando..." if mode == 'decompress' else "Organizando..."
+        task = progress.add_task(f"[green]{action_text}", total=total_files)
         
         # Callback simples para avançar a barra
         def update_bar():
@@ -71,6 +82,8 @@ def run_organization_with_progress(organizer: Organizer, directory: Path, mode: 
             organizer.organize_by_extension(directory, recursive, remove_empty, progress_callback=update_bar)
         elif mode == 'date':
             organizer.organize_by_date(directory, recursive, remove_empty, progress_callback=update_bar)
+        elif mode == 'decompress':
+            organizer.decompress_files(directory, recursive, progress_callback=update_bar)
 
     end_time = time.time()
     show_report(organizer, end_time - start_time)
@@ -106,33 +119,41 @@ def main():
         console.print("\n[bold]Menu Principal[/bold]")
         console.print("1. [cyan]Organizar por Extensão[/cyan]")
         console.print("2. [cyan]Organizar por Data[/cyan]")
-        console.print("3. [yellow]Modo Sentinel (Monitoramento)[/yellow]")
-        console.print("4. [magenta]Desfazer (Undo)[/magenta]")
-        console.print("5. [red]Sair[/red]")
+        console.print("3. [cyan]Descompactar em Massa[/cyan]")
+        console.print("4. [yellow]Modo Sentinel (Monitoramento)[/yellow]")
+        console.print("5. [magenta]Desfazer (Undo)[/magenta]")
+        console.print("6. [red]Sair[/red]")
         
-        choice = Prompt.ask("Escolha uma opção", choices=["1", "2", "3", "4", "5"])
+        choice = Prompt.ask("Escolha uma opção", choices=["1", "2", "3", "4", "5", "6"])
         
-        if choice == '5':
+        if choice == '6':
             console.print("[green]Até logo![/green]")
             break
             
-        elif choice in ['1', '2']:
+        elif choice in ['1', '2', '3']:
             recursive = Confirm.ask("Incluir subpastas (Recursivo)?")
-            remove_empty = Confirm.ask("Remover pastas vazias ao final?")
+            
+            remove_empty = False
+            if choice != '3': # Não faz sentido remover vazias ao descompactar, ou faz? Geralmente não.
+                remove_empty = Confirm.ask("Remover pastas vazias ao final?")
+                
             dry_run = Confirm.ask("Apenas simular (Dry Run)?")
             
             organizer.dry_run = dry_run
-            mode = 'ext' if choice == '1' else 'date'
+            
+            mode = 'ext'
+            if choice == '2': mode = 'date'
+            elif choice == '3': mode = 'decompress'
             
             run_organization_with_progress(organizer, target_dir, mode, recursive, remove_empty)
             
-        elif choice == '3':
+        elif choice == '4':
             console.print("[bold yellow]Iniciando Modo Sentinel...[/bold yellow]")
             console.print("O programa ficará monitorando a pasta. Pressione [bold red]ESC[/bold red] para parar.")
             organizer.start_sentinel(target_dir)
             console.print("[yellow]Sentinel encerrado.[/yellow]")
             
-        elif choice == '4':
+        elif choice == '5':
             if Confirm.ask("Deseja desfazer a última organização nesta pasta?"):
                 with console.status("[bold red]Revertendo alterações..."):
                     results = organizer.undo_operation(target_dir)
