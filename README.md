@@ -1,125 +1,136 @@
-# 🚀 OsCabaOrganiza - Smart File Organizer
+# 🚀 OsCabaOrganiza - Enterprise-Grade File Automation CLI
 
 [![Python](https://img.shields.io/badge/Python-3.13+-blue.svg)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Code Style](https://img.shields.io/badge/Code_Style-PEP_8-green.svg)](https://www.python.org/dev/peps/pep-0008/)
 [![Build Status](https://img.shields.io/badge/Build-Passing-brightgreen.svg)]()
 
-> **👨‍💻 Desenvolvido por Gabriel Penha (Gabaoun)**
+> **👨‍💻 Developed by Gabriel Penha (Gabaoun)**
 
-**OsCabaOrganiza** é uma ferramenta CLI enterprise-grade desenvolvida em Python para automação inteligente de organização de arquivos. Projetada com padrões de engenharia de software modernos, esta solução demonstra expertise em desenvolvimento de sistemas robustos, concorrência e experiência do usuário em terminal.
+**OsCabaOrganiza** is a high-performance CLI tool engineered to automate file system organization. Built with Python, it leverages modern software engineering principles—including concurrency, design patterns, and atomic transactions—to deliver a robust, user-friendly experience.
 
-## 💼 Competências Técnicas Demonstradas
+This project serves as a comprehensive portfolio piece demonstrating proficiency in **system programming**, **architecture design**, and **Python best practices**.
 
-### 🎯 Core Features
-- **📂 Organização Inteligente**: Algoritmo de classificação por extensão e data com configuração JSON
-- **🕒 Real-time Monitoring**: Sistema de file system events com arquitetura observer pattern
-- **🔄 Atomic Operations**: Sistema de undo/redo com transações reversíveis
-- **📊 Analytics Dashboard**: Métricas detalhadas de performance e volume de dados
-- **🚀 High Performance**: Multi-threading com ThreadPoolExecutor para processamento paralelo
-- **🎨 Rich Terminal UI**: Interface moderna com progress bars, tables e syntax highlighting
-- **⌨️ Graceful Shutdown**: Signal handling para interrupção segura com cleanup automático
+---
 
-### 🏗️ Engineering Excellence
-- **Clean Architecture**: Separação clara de responsabilidades com injeção de dependências
-- **Error Handling**: Tratamento robusto de exceções com logging estruturado
-- **Configuration Management**: Sistema de configuração externa com validação
-- **Testing**: Testes unitários com pytest e mocking de file system
-- **Packaging**: Executável standalone com PyInstaller para distribuição empresarial
+## 💼 Why This Matters (For Recruiters)
 
-## 🛠️ Stack Tecnológico
+This project is not just a script; it is a full-fledged application that demonstrates ready-to-hire skills:
 
-| Componente | Tecnologia | Propósito |
-|------------|------------|-----------|
-| **Linguagem** | Python 3.13+ | Core development with type hints |
-| **Terminal UI** | Rich | Interfaces ricas com tabelas, progress bars e syntax highlighting |
-| **File System** | Watchdog | Cross-platform file system events monitoring |
-| **Packaging** | PyInstaller | Distribuição como executável standalone |
-| **Color Support** | Colorama | Terminal color management cross-platform |
-| **Development** | pytest, black, mypy | Testing, formatting e type checking |
+### 🛠 Technical Proficiency
+- **Advanced Python**: Utilizes type hinting (`typing`), context managers, and decorators for clean, maintainable code.
+- **Concurrency & Performance**: Implements `ThreadPoolExecutor` for non-blocking, parallel file processing, significantly speeding up large batch operations.
+- **System Programming**: Direct interaction with OS file systems, signal handling (graceful shutdowns), and cross-platform compatibility.
+- **Design Patterns**:
+  - **Observer Pattern**: Used in the "Sentinel" mode to monitor real-time file system events.
+  - **Strategy Pattern**: Decouples organization logic (by extension vs. by date).
+  - **Transactional Safety**: Implements an Undo/Redo system using JSON-based transaction logs to ensure data integrity.
 
-**📦 Production Ready**: Containerizado e pronto para deploy em ambientes empresariais
+### 🎨 Product Engineering
+- **User Experience (UX)**: Features a polished CLI with `rich` for progress bars, colored output, and interactive tables.
+- **Reliability**: Comprehensive error handling and logging ensure the application doesn't crash unexpectedly during batch operations.
+- **Maintainability**: Follows **Clean Architecture** principles, separating core logic (`app/core.py`) from the presentation layer (`app/cli.py`, `app/ui.py`).
+
+---
+
+## 🎯 Key Features
+
+- **📂 Intelligent Sorting**: Automatically organizes files into folders based on extensions or creation dates (fully configurable via `config.json`).
+- **👀 Sentinel Mode (Real-time)**: Watches directories in the background and organizes files the moment they are created (using `watchdog`).
+- **↩️ Atomic Undo/Redo**: Safely reverts operations. If a batch move fails or you change your mind, you can restore the previous state instantly.
+- **📦 Bulk Decompression**: Automatically detects and extracts supported archives (`.zip`, `.tar`, `.gz`, etc.) into dedicated folders.
+- **📊 Analytics Dashboard**: Provides real-time statistics on processed files, volume moved, and execution time.
+- **🚀 High Performance**: Thread-safe operations allow processing thousands of files in seconds without UI freezing.
+
+---
+
+## 🛠️ Tech Stack
+
+| Component | Technology | Reasoning |
+|-----------|------------|-----------|
+| **Core Language** | Python 3.13+ | Leverages modern syntax and robust standard library (`pathlib`, `shutil`, `concurrent.futures`). |
+| **CLI / UI** | Rich | Delivers a modern, readable terminal interface with minimal overhead. |
+| **File Monitoring** | Watchdog | Efficient, cross-platform file system event handling. |
+| **Configuration** | JSON | Standard, human-readable format for portable configuration. |
+| **Distribution** | PyInstaller | Compiles the app into a standalone binary for easy distribution. |
+| **Testing** | Pytest | Ensures reliability through unit and integration tests. |
+
+---
 
 ## 🚀 Quick Start
 
-### Pré-requisitos
-- Python 3.13+ com pip
+### Prerequisites
+- Python 3.13 or higher
 - Git
 
-### Instalação
+### Installation
+
 ```bash
-# Clone o repositório
+# 1. Clone the repository
 git clone https://github.com/gabaoun/OsCabaOrganiza.git
 cd OsCabaOrganiza
 
-# Instale dependências em ambiente virtual (recomendado)
+# 2. Create a virtual environment (Recommended)
 python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
+# Windows
+venv\Scripts\activate
+# Linux/Mac
+source venv/bin/activate
+
+# 3. Install dependencies
 pip install -r requirements.txt
 
-# Execute a aplicação
+# 4. Run the application
 python main.py
 ```
 
-### Build para Produção
+### Building for Production
+To create a standalone executable (no Python installation required for the end-user):
+
 ```bash
-# Gere executável standalone
+# Build the binary using PyInstaller
 pyinstaller --onefile --windowed main.py
 
-# Execute sem dependências Python
+# Run the generated executable
 ./dist/main
 ```
 
-## 📁 Arquitetura do Projeto
+---
 
-```
+## 📁 Project Architecture
+
+The codebase follows a modular structure to ensure scalability and ease of testing.
+
+```plaintext
 OsCabaOrganiza/
-├── app/                    # Core application layer
+├── app/
 │   ├── __init__.py
-│   ├── organizer.py        # Business logic & file operations
-│   ├── ui.py              # Rich terminal interface
-│   └── config.py          # Configuration management
-├── tests/                  # Test suite
-│   ├── test_organizer.py
-│   └── test_config.py
-├── config.json            # File extension mapping
-├── main.py                # Application entry point
-├── requirements.txt       # Python dependencies
-└── README.md             # This file
+│   ├── core.py            # Business logic (Organizer, UndoManager, Sentinel)
+│   ├── cli.py             # Command-line entry point and argument parsing
+│   ├── ui.py              # UI rendering logic (Rich integration)
+│   ├── utils.py           # Helper functions (Logging, Input handling)
+│   └── config.py          # Configuration loader and validator
+├── tests/                 # Unit and integration tests
+├── config.json            # User configuration (Mappings, settings)
+├── main.py                # Application bootstrapper
+├── requirements.txt       # Project dependencies
+└── README.md              # Project documentation
 ```
 
-## 🎯 Por que este projeto é relevante para recrutadores?
+---
 
-### ✅ Demonstração de Competências Técnicas
-- **Python Avançado**: Type hints, async/await, context managers
-- **Design Patterns**: Observer, Strategy, Factory Method
-- **Performance**: Multi-threading, memory optimization, batch processing
-- **DevOps**: Packaging, configuration management, cross-platform compatibility
+## 📬 Connect With Me
 
-### ✅ Soft Skills
-- **Problem Solving**: Automação de tarefas repetitivas complexas
-- **User Experience**: Interface intuitiva com feedback visual
-- **Code Quality**: Clean code, documentação, testabilidade
-- **Innovation**: Solução criativa para problema comum do dia a dia
-
-### ✅ Enterprise Readiness
-- **Escalabilidade**: Processa milhares de arquivos sem degradação
-- **Confiabilidade**: Tratamento robusto de erros e recuperação
-- **Manutenibilidade**: Código modular e bem documentado
-- **Deploy**: Distribuição simplificada sem dependências
-
-## 📬 Conecte-se Comigo
+I am a software engineer passionate about building efficient tools and solving real-world problems.
 
 **Gabriel Penha (Gabaoun)**
 - 📧 Email: [penhagabriellima@gmail.com]
 - 🐙 GitHub: [github.com/gabaoun]
 
-> **🚀 Disponível para oportunidades**: Python | Automation | Full-Stack Development
-
-## 📄 Licença
-
-Distribuído sob a licença MIT. Veja `LICENSE` para mais informações.
+> **🚀 Open to Work**: Python Backend | System Automation | Full-Stack Development
 
 ---
 
-**⭐ Se este projeto demonstrou o tipo de solução que sua empresa precisa, entre em contato!**
+## 📄 License
+
+Distributed under the MIT License. See `LICENSE` for more information.
