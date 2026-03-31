@@ -184,6 +184,8 @@ class Organizer:
         try:
             target_folder = base_directory / folder_name
             file_size = file_path.stat().st_size
+            
+            logger.debug(f"Moving {file_path.name} to {folder_name}")
 
             if not self.dry_run:
                 target_folder.mkdir(parents=True, exist_ok=True)

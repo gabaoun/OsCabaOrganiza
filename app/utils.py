@@ -59,10 +59,25 @@ def get_app_path() -> Path:
         return Path(sys.executable).parent
     return Path(__file__).parent.parent
 
+def get_bundle_path() -> Path:
+    """Returns the path to the bundled files (PyInstaller _MEIPASS)."""
+    if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
+        return Path(sys._MEIPASS)
+    return get_app_path()
+
 def load_config(config_name: str = "config.json") -> Dict[str, Any]:
-    """Loads configuration."""
-    base_path = get_app_path()
-    path = base_path / config_name
+    """Loads configuration with fallback to bundled config."""
+    # 1. Try next to executable
+    app_path = get_app_path()
+    path = app_path / config_name
+
+    # 2. Try in current working directory
+    if not path.exists():
+        path = Path.cwd() / config_name
+
+    # 3. Try bundled config
+    if not path.exists():
+        path = get_bundle_path() / config_name
 
     default_config = {
         "extensions": {},
@@ -70,11 +85,7 @@ def load_config(config_name: str = "config.json") -> Dict[str, Any]:
     }
     
     if not path.exists():
-        cwd_path = Path.cwd() / config_name
-        if cwd_path.exists():
-            path = cwd_path
-        else:
-            return default_config
+        return default_config
         
     try:
         with open(path, 'r', encoding='utf-8') as f:
