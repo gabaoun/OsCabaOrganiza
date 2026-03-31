@@ -11,7 +11,7 @@ from .utils import setup_logger, check_esc_pressed, flush_input
 
 logger = setup_logger()
 
-# Tenta importar watchdog, mas não falha se não estiver disponível
+# Try to import watchdog, but don't fail if not available
 try:
     from watchdog.observers import Observer
     from watchdog.events import FileSystemEventHandler
@@ -20,7 +20,7 @@ except ImportError:
     HAS_WATCHDOG = False
 
 class UndoManager:
-    """Gerencia o histórico de operações para permitir desfazer."""
+    """Manages operation history to allow undo."""
     def __init__(self, history_file: Path):
         self.history_file = history_file
         self.history: List[Dict] = []
@@ -35,7 +35,7 @@ class UndoManager:
                 self.history = []
 
     def register_move(self, src: str, dst: str):
-        """Registra uma movimentação."""
+        """Registers a file move."""
         self.history.append({
             "action": "move",
             "src": src,
@@ -52,20 +52,20 @@ class UndoManager:
             pass
 
     def undo_last_session(self) -> List[str]:
-        """Desfaz as operações registradas e limpa o histórico."""
+        """Undoes registered operations and clears history."""
         results = []
-        # Processa do último para o primeiro (LIFO)
+        # Process from last to first (LIFO)
         for entry in reversed(self.history):
             if entry["action"] == "move":
-                src = Path(entry["src"]) # Onde estava originalmente
-                dst = Path(entry["dst"]) # Onde está agora
+                src = Path(entry["src"]) # Original location
+                dst = Path(entry["dst"]) # Current location
 
                 if dst.exists():
                     try:
-                        # Garante que a pasta original exista
+                        # Ensure original folder exists
                         src.parent.mkdir(parents=True, exist_ok=True)
                         
-                        # Evita sobrescrever se algo foi criado no lugar do original
+                        # Avoid overwriting if something was created in the original's place
                         target = src
                         counter = 1
                         while target.exists():
@@ -73,19 +73,19 @@ class UndoManager:
                             counter += 1
                         
                         shutil.move(str(dst), str(target))
-                        results.append(f"Restaurado: {dst.name} -> {target}")
+                        results.append(f"Restored: {dst.name} -> {target}")
                         
-                        # Remove pasta de destino se ficou vazia
+                        # Remove destination folder if it became empty
                         try:
                             dst.parent.rmdir()
                         except OSError:
                             pass
                     except Exception as e:
-                        results.append(f"Erro ao restaurar {dst.name}: {e}")
+                        results.append(f"Error restoring {dst.name}: {e}")
                 else:
-                    results.append(f"Arquivo não encontrado para restaurar: {dst}")
+                    results.append(f"File not found to restore: {dst}")
         
-        # Limpa o histórico após desfazer
+        # Clear history after undo
         self.history = []
         if self.history_file.exists():
             os.remove(self.history_file)
@@ -93,7 +93,7 @@ class UndoManager:
         return results
 
 class SentinelHandler(FileSystemEventHandler):
-    """Manipulador de eventos do Watchdog."""
+    """Watchdog event handler."""
     def __init__(self, organizer_instance, directory: Path):
         self.organizer = organizer_instance
         self.directory = directory
@@ -102,23 +102,21 @@ class SentinelHandler(FileSystemEventHandler):
         if event.is_directory:
             return
         
-        # Aguarda um pouco para garantir que o arquivo foi escrito
+        # Wait a bit to ensure the file was written
         time.sleep(1)
         
         file_path = Path(event.src_path)
-        # Ignora arquivos temporários ou do próprio sistema
+        # Ignore temporary or system files
         if file_path.name == "undo_log.json" or file_path.name.startswith('.'):
             return
 
-        # Chama a organização para este arquivo específico
-        # Nota: Chamamos direto, sem thread pool aqui para simplificar
-        # em um cenário real, poderia ser enfileirado.
+        # Process this specific file
         self.organizer.process_single_file_event(file_path, self.directory)
 
 class Organizer:
     def __init__(self, config: Dict, dry_run: bool = False):
         self.config = config
-        self.others_folder = config.get("others_folder", "Outros")
+        self.others_folder = config.get("others_folder", "Others")
         self.dry_run = dry_run
         self.lock = Lock()
         
@@ -128,26 +126,26 @@ class Organizer:
             for ext in extensions:
                 self.extension_lookup[ext.lower()] = folder
 
-        # Undo Manager será inicializado quando soubermos o diretório alvo
+        # Undo Manager will be initialized when we know the target directory
         self.undo_manager: Optional[UndoManager] = None
         
-        # Estatísticas para relatório
+        # Statistics for report
         self.stats = {"moved": 0, "errors": 0, "bytes": 0, "extracted": 0}
 
     def _find_folder(self, extension: str) -> str:
         return self.extension_lookup.get(extension.lower(), self.others_folder)
 
     def _get_archive_extensions(self) -> List[str]:
-        """Retorna lista de extensões suportadas pelo shutil."""
+        """Returns list of extensions supported by shutil."""
         extensions = []
         for format_name, exts, description in shutil.get_unpack_formats():
             extensions.extend(exts)
         return extensions
 
     def _decompress_single_file(self, file_path: Path, base_directory: Path) -> str:
-        """Descompacta um arquivo para uma pasta com seu nome."""
+        """Decompresses a file into a folder with its name."""
         try:
-            # Tenta lidar com extensões duplas como .tar.gz
+            # Handle double extensions like .tar.gz
             folder_name = file_path.stem
             if file_path.suffix.lower() == '.gz' and Path(folder_name).suffix.lower() == '.tar':
                 folder_name = Path(folder_name).stem
@@ -159,29 +157,29 @@ class Organizer:
             output_folder = base_directory / folder_name
             
             if self.dry_run:
-                return f"[SIMULAÇÃO] Descompactaria: '{file_path.name}' para '{folder_name}/'"
+                return f"[SIMULATION] Would decompress: '{file_path.name}' to '{folder_name}/'"
 
-            # Cria a pasta de destino
+            # Create destination folder
             output_folder.mkdir(parents=True, exist_ok=True)
 
-            # Descompacta
+            # Decompress
             shutil.unpack_archive(str(file_path), str(output_folder))
 
             with self.lock:
                 self.stats["extracted"] += 1
                 self.stats["bytes"] += file_path.stat().st_size
             
-            return f"Descompactado: {file_path.name} -> {folder_name}/"
+            return f"Decompressed: {file_path.name} -> {folder_name}/"
             
         except Exception as e:
             with self.lock:
                 self.stats["errors"] += 1
-            return f"ERRO ao descompactar {file_path.name}: {str(e)}"
+            return f"ERROR decompressing {file_path.name}: {str(e)}"
 
     def _move_single_file(self, file_path: Path, folder_name: str, base_directory: Path) -> str:
-        """Move arquivo, atualiza stats e registra undo."""
+        """Moves file, updates stats and registers undo."""
         if file_path.name.startswith('.') or file_path.name == "undo_log.json":
-            return f"Ignorado: {file_path.name}"
+            return f"Ignored: {file_path.name}"
 
         try:
             target_folder = base_directory / folder_name
@@ -198,15 +196,15 @@ class Organizer:
                     counter += 1
 
             if self.dry_run:
-                return f"[SIMULAÇÃO] Moveria: '{file_path.name}'"
+                return f"[SIMULATION] Would move: '{file_path.name}'"
             
-            # Executa Mover
+            # Execute Move
             src_str = str(file_path.resolve())
             dst_str = str(destination_path.resolve())
             
             shutil.move(src_str, dst_str)
             
-            # Registra no Undo e Stats
+            # Register Undo and Stats
             if self.undo_manager:
                 self.undo_manager.register_move(src_str, dst_str)
             
@@ -214,22 +212,21 @@ class Organizer:
                 self.stats["moved"] += 1
                 self.stats["bytes"] += file_size
                 
-            return f"Sucesso: {file_path.name}"
+            return f"Success: {file_path.name}"
             
         except Exception as e:
             with self.lock:
                 self.stats["errors"] += 1
-            return f"ERRO: {str(e)}"
+            return f"ERROR: {str(e)}"
 
     def process_single_file_event(self, file_path: Path, base_directory: Path):
-        """Processa um único arquivo (usado pelo Sentinel)."""
+        """Processes a single file (used by Sentinel)."""
         if not file_path.exists():
             return
             
         folder = self._find_folder(file_path.suffix)
         res = self._move_single_file(file_path, folder, base_directory)
-        # Em modo Sentinel, imprimimos direto no log ou console se possível
-        if "Sucesso" in res:
+        if "Success" in res:
             logger.info(f"[Sentinel] {res}")
 
     def _get_files(self, directory: Path, recursive: bool):
@@ -254,7 +251,7 @@ class Organizer:
             
             for future in futures:
                 if check_esc_pressed():
-                    logger.warning("Operação abortada pelo usuário (ESC pressionado).")
+                    logger.warning("Operation aborted by user (ESC pressed).")
                     executor.shutdown(wait=False, cancel_futures=True)
                     return
 
@@ -282,7 +279,7 @@ class Organizer:
             
             for future in futures:
                 if check_esc_pressed():
-                    logger.warning("Operação abortada pelo usuário (ESC pressionado).")
+                    logger.warning("Operation aborted by user (ESC pressed).")
                     executor.shutdown(wait=False, cancel_futures=True)
                     return
 
@@ -294,18 +291,16 @@ class Organizer:
             self._remove_empty_folders(directory)
 
     def decompress_files(self, directory: Path, recursive: bool = False, progress_callback: Callable = None) -> None:
-        """Descompacta arquivos em massa."""
+        """Batch decompresses files."""
         self.stats = {"moved": 0, "errors": 0, "bytes": 0, "extracted": 0}
         
-        # Identifica extensões suportadas
+        # Identify supported extensions
         supported_exts = set(self._get_archive_extensions())
         
-        # Filtra apenas arquivos que são arquivos compactados suportados
+        # Filter only supported archive files
         all_files = list(self._get_files(directory, recursive))
         archive_files = [f for f in all_files if ''.join(f.suffixes) in supported_exts or f.suffix in supported_exts]
         
-        # Fallback simples se a verificação acima falhar para alguns casos complexos, 
-        # verificamos apenas a extensão final contra a lista do shutil
         if not archive_files:
              archive_files = [f for f in all_files if f.suffix in supported_exts]
 
@@ -319,7 +314,7 @@ class Organizer:
             
             for future in futures:
                 if check_esc_pressed():
-                    logger.warning("Operação abortada pelo usuário (ESC pressionado).")
+                    logger.warning("Operation aborted by user (ESC pressed).")
                     executor.shutdown(wait=False, cancel_futures=True)
                     return
 
@@ -339,9 +334,9 @@ class Organizer:
                     pass
 
     def start_sentinel(self, directory: Path):
-        """Inicia o modo de monitoramento contínuo."""
+        """Starts continuous monitoring mode."""
         if not HAS_WATCHDOG:
-            logger.error("Biblioteca 'watchdog' não instalada.")
+            logger.error("'watchdog' library not installed.")
             return
 
         self.undo_manager = UndoManager(directory / "undo_log.json")
@@ -362,6 +357,6 @@ class Organizer:
             observer.join()
 
     def undo_operation(self, directory: Path) -> List[str]:
-        """Wrapper para o undo manager."""
+        """Wrapper for undo manager."""
         mgr = UndoManager(directory / "undo_log.json")
         return mgr.undo_last_session()
