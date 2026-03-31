@@ -1,15 +1,15 @@
-# 🚀 OsCabaOrganiza
+# OsCabaOrganiza
 
 [![Python](https://img.shields.io/badge/Python-3.13+-blue.svg)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Code Style](https://img.shields.io/badge/Code_Style-PEP_8-green.svg)](https://www.python.org/dev/peps/pep-0008/)
 [![Build Status](https://img.shields.io/badge/Build-Passing-brightgreen.svg)]()
 
-> **👨‍💻 Developed by Gabriel Penha (Gabaoun)**
+> ** Developed by Gabriel Penha (Gabaoun)**
 
 ---
 
-> ## 🧩 Overview
+> ## Overview
 
 **OsCabaOrganiza** is a command-line application built to simplify file system organization.  
 It focuses on handling large volumes of files efficiently while maintaining predictable behavior and data safety.
@@ -41,7 +41,7 @@ This project was built to explore concurrency, modular design, and practical sys
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 - **Python 3.14**
 - **Rich** (CLI output)
@@ -50,7 +50,7 @@ This project was built to explore concurrency, modular design, and practical sys
 
 ---
 
-## 📥 Download
+## Download
 
 You can download the latest version of **OsCabaOrganiza** directly from our [releases page](https://github.com/gabaoun/OsCabaOrganiza/releases).
 
@@ -64,7 +64,7 @@ You can download the latest version of **OsCabaOrganiza** directly from our [rel
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 - Python 3.14 or higher
@@ -104,7 +104,7 @@ python -m PyInstaller --onefile --name OsCabaOrganiza main.py
 
 ---
 
-## 📁 Project Architecture
+## Project Architecture
 
 The codebase follows a modular structure to ensure scalability and ease of testing.
 
@@ -126,8 +126,8 @@ OsCabaOrganiza/
 
 ## 📬 Contact:
 **Gabriel Penha (Gabaoun)**
-- 📧 Email: [penhagabriellima@gmail.com]
-- 🐙 GitHub: [github.com/gabaoun]
+- Email: [penhagabriellima@gmail.com]
+- GitHub: [github.com/gabaoun]
   
 ---
 
