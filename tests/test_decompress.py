@@ -13,7 +13,7 @@ class TestDecompression(unittest.TestCase):
         self.path = Path(self.test_dir)
         self.config = {
             "extensions": {},
-            "others_folder": "Outros"
+            "others_folder": "Others"
         }
         self.organizer = Organizer(self.config, dry_run=False)
 

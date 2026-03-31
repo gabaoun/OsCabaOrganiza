@@ -1,12 +1,12 @@
 {
     "extensions": {
-        "Imagens": [".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tiff", ".svg", ".webp", ".ico", ".raw"],
-        "Documentos": [".pdf", ".docx", ".doc", ".txt", ".xlsx", ".xls", ".pptx", ".csv", ".md", ".epub"],
+        "Images": [".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tiff", ".svg", ".webp", ".ico", ".raw"],
+        "Documents": [".pdf", ".docx", ".doc", ".txt", ".xlsx", ".xls", ".pptx", ".csv", ".md", ".epub"],
         "Videos": [".mp4", ".avi", ".mov", ".mkv", ".wmv", ".flv", ".webm"],
-        "Musicas": [".mp3", ".wav", ".aac", ".flac", ".ogg", ".wma"],
-        "Compactados": [".zip", ".rar", ".7z", ".tar.gz", ".iso", ".tgz"],
-        "Scripts_Codigos": [".py", ".js", ".html", ".css", ".json", ".java", ".cpp", ".php", ".ts", ".sql"],
-        "Executaveis": [".exe", ".msi", ".dmg", ".sh", ".bat", ".apk"]
+        "Music": [".mp3", ".wav", ".aac", ".flac", ".ogg", ".wma"],
+        "Archives": [".zip", ".rar", ".7z", ".tar.gz", ".iso", ".tgz"],
+        "Scripts_Code": [".py", ".js", ".html", ".css", ".json", ".java", ".cpp", ".php", ".ts", ".sql"],
+        "Executables": [".exe", ".msi", ".dmg", ".sh", ".bat", ".apk"]
     },
-    "others_folder": "Outros"
+    "others_folder": "Others"
 }

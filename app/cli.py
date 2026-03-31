@@ -17,49 +17,47 @@ from .utils import load_config, setup_logger, console, print_banner, get_app_pat
 def get_directory_gui() -> Optional[Path]:
     root = Tk()
     root.withdraw()
-    path = filedialog.askdirectory(title="Selecione o diretório para organizar")
+    path = filedialog.askdirectory(title="Select directory to organize")
     root.destroy()
     return Path(path) if path else None
 
 def show_report(organizer: Organizer, duration: float):
-    """Exibe relatório final colorido."""
-    table = Table(title="Relatório de Organização")
-    table.add_column("Métrica", style="cyan")
-    table.add_column("Valor", style="magenta")
+    """Displays colored final report."""
+    table = Table(title="Organization Report")
+    table.add_column("Metric", style="cyan")
+    table.add_column("Value", style="magenta")
     
-    table.add_row("Arquivos Movidos", str(organizer.stats["moved"]))
-    table.add_row("Arquivos Descompactados", str(organizer.stats.get("extracted", 0)))
-    table.add_row("Erros", str(organizer.stats["errors"]))
+    table.add_row("Files Moved", str(organizer.stats["moved"]))
+    table.add_row("Files Decompressed", str(organizer.stats.get("extracted", 0)))
+    table.add_row("Errors", str(organizer.stats["errors"]))
     
-    # Formatação de bytes
+    # Byte formatting
     bytes_val = organizer.stats["bytes"]
     if bytes_val > 1024 * 1024:
         size_str = f"{bytes_val / (1024*1024):.2f} MB"
     else:
         size_str = f"{bytes_val / 1024:.2f} KB"
         
-    table.add_row("Volume Processado", size_str)
-    table.add_row("Tempo Decorrido", f"{duration:.2f}s")
+    table.add_row("Processed Volume", size_str)
+    table.add_row("Time Elapsed", f"{duration:.2f}s")
     
     console.print(table)
 
 def run_organization_with_progress(organizer: Organizer, directory: Path, mode: str, recursive: bool, remove_empty: bool):
-    """Executa a organização com barra de progresso."""
+    """Executes organization with progress bar."""
     
-    # Contagem prévia (rápida) para definir o total da barra
-    with console.status("[bold green]Analisando arquivos..."):
+    # Pre-count (fast) to define bar total
+    with console.status("[bold green]Analyzing files..."):
         all_files = list(organizer._get_files(directory, recursive))
         if mode == 'decompress':
-            # Filtra apenas arquivos compatíveis com descompactação
+            # Filter only compatible archive files
             exts = set(organizer._get_archive_extensions())
-            # Verifica suffix simples e sufixos compostos (ex: .tar.gz)
-            # Nota: a lógica exata deve bater com a do core, aqui é uma aproximação suficiente para a barra
             total_files = sum(1 for f in all_files if f.suffix in exts or ''.join(f.suffixes) in exts)
         else:
             total_files = len(all_files)
     
     if total_files == 0:
-        msg = "Nenhum arquivo compactado encontrado." if mode == 'decompress' else "Nenhum arquivo para organizar."
+        msg = "No compressed files found." if mode == 'decompress' else "No files to organize."
         console.print(f"[yellow]{msg}[/yellow]")
         return
 
@@ -71,10 +69,10 @@ def run_organization_with_progress(organizer: Organizer, directory: Path, mode: 
         BarColumn(),
         TextColumn("[progress.percentage]{task.percentage:>3.0f}%"),
     ) as progress:
-        action_text = "Descompactando..." if mode == 'decompress' else "Organizando..."
+        action_text = "Decompressing..." if mode == 'decompress' else "Organizing..."
         task = progress.add_task(f"[green]{action_text}", total=total_files)
         
-        # Callback simples para avançar a barra
+        # Simple callback to advance bar
         def update_bar():
             progress.advance(task)
 
@@ -89,55 +87,54 @@ def run_organization_with_progress(organizer: Organizer, directory: Path, mode: 
     show_report(organizer, end_time - start_time)
 
 def main():
-    parser = argparse.ArgumentParser(description="OsCabaOrganiza - Organizador Profissional")
-    parser.add_argument("--path", type=str, help="Caminho do diretório")
+    parser = argparse.ArgumentParser(description="OsCabaOrganiza - Professional Organizer")
+    parser.add_argument("--path", type=str, help="Directory path")
     args = parser.parse_args()
     
     # Setup
-    # No modo interativo, o logger do utils já silencia o output padrão para não quebrar a UI
     logger = setup_logger(verbose=False)
     config = load_config()
     organizer = Organizer(config)
     
     if args.path:
-        # Modo CLI simples (sem UI rica por enquanto, mantendo compatibilidade básica)
+        # Simple CLI mode
         target = Path(args.path)
         organizer.organize_by_extension(target)
         return
 
-    # Modo Interativo Rico
+    # Rich Interactive Mode
     print_banner()
     
     target_dir = get_directory_gui()
     if not target_dir:
-        console.print("[red]Nenhum diretório selecionado.[/red]")
+        console.print("[red]No directory selected.[/red]")
         return
 
     while True:
-        console.print(Panel.fit(f"[bold blue]Alvo:[/bold blue] {target_dir}", border_style="blue"))
+        console.print(Panel.fit(f"[bold blue]Target:[/bold blue] {target_dir}", border_style="blue"))
         
-        console.print("\n[bold]Menu Principal[/bold]")
-        console.print("1. [cyan]Organizar por Extensão[/cyan]")
-        console.print("2. [cyan]Organizar por Data[/cyan]")
-        console.print("3. [cyan]Descompactar em Massa[/cyan]")
-        console.print("4. [yellow]Modo Sentinel (Monitoramento)[/yellow]")
-        console.print("5. [magenta]Desfazer (Undo)[/magenta]")
-        console.print("6. [red]Sair[/red]")
+        console.print("\n[bold]Main Menu[/bold]")
+        console.print("1. [cyan]Organize by Extension[/cyan]")
+        console.print("2. [cyan]Organize by Date[/cyan]")
+        console.print("3. [cyan]Batch Decompress[/cyan]")
+        console.print("4. [yellow]Sentinel Mode (Monitoring)[/yellow]")
+        console.print("5. [magenta]Undo[/magenta]")
+        console.print("6. [red]Exit[/red]")
         
-        choice = Prompt.ask("Escolha uma opção", choices=["1", "2", "3", "4", "5", "6"])
+        choice = Prompt.ask("Choose an option", choices=["1", "2", "3", "4", "5", "6"])
         
         if choice == '6':
-            console.print("[green]Até logo![/green]")
+            console.print("[green]See you later![/green]")
             break
             
         elif choice in ['1', '2', '3']:
-            recursive = Confirm.ask("Incluir subpastas (Recursivo)?")
+            recursive = Confirm.ask("Include subfolders (Recursive)?")
             
             remove_empty = False
-            if choice != '3': # Não faz sentido remover vazias ao descompactar, ou faz? Geralmente não.
-                remove_empty = Confirm.ask("Remover pastas vazias ao final?")
+            if choice != '3':
+                remove_empty = Confirm.ask("Remove empty folders at the end?")
                 
-            dry_run = Confirm.ask("Apenas simular (Dry Run)?")
+            dry_run = Confirm.ask("Simulate only (Dry Run)?")
             
             organizer.dry_run = dry_run
             
@@ -148,20 +145,20 @@ def main():
             run_organization_with_progress(organizer, target_dir, mode, recursive, remove_empty)
             
         elif choice == '4':
-            console.print("[bold yellow]Iniciando Modo Sentinel...[/bold yellow]")
-            console.print("O programa ficará monitorando a pasta. Pressione [bold red]ESC[/bold red] para parar.")
+            console.print("[bold yellow]Starting Sentinel Mode...[/bold yellow]")
+            console.print("Monitoring directory. Press [bold red]ESC[/bold red] to stop.")
             organizer.start_sentinel(target_dir)
-            console.print("[yellow]Sentinel encerrado.[/yellow]")
+            console.print("[yellow]Sentinel stopped.[/yellow]")
             
         elif choice == '5':
-            if Confirm.ask("Deseja desfazer a última organização nesta pasta?"):
-                with console.status("[bold red]Revertendo alterações..."):
+            if Confirm.ask("Undo last organization in this folder?"):
+                with console.status("[bold red]Reverting changes..."):
                     results = organizer.undo_operation(target_dir)
                 
                 if not results:
-                    console.print("[yellow]Nada para desfazer ou histórico não encontrado.[/yellow]")
+                    console.print("[yellow]Nothing to undo or history not found.[/yellow]")
                 else:
-                    console.print(f"[green]Revertidos {len(results)} arquivos.[/green]")
+                    console.print(f"[green]Reverted {len(results)} files.[/green]")
 
 if __name__ == "__main__":
     main()

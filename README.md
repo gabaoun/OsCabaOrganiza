@@ -30,7 +30,7 @@ This project was built to explore concurrency, modular design, and practical sys
 - **Real-time Monitoring**
   - Watches directories and processes new files automatically
 
-- **Undo / Redo Support**
+- **Undo Support**
   - Tracks operations and allows reverting changes safely
 
 - **Archive Handling**
@@ -43,47 +43,31 @@ This project was built to explore concurrency, modular design, and practical sys
 
 ## 🛠️ Tech Stack
 
-- **Python 3.13**
+- **Python 3.14**
 - **Rich** (CLI output)
 - **Watchdog** (file system events)
-- **Pytest** (testing)
+- **Unittest** (testing)
 
 ---
 
-## 🧠 Key Technical Points
+## 📥 Download
 
-- Uses `ThreadPoolExecutor` for parallel file processing  
-- Separates core logic from CLI layer for better maintainability  
-- Implements basic transactional behavior for undo/redo using JSON logs  
-- Handles file system operations with focus on consistency and error recovery  
+You can download the latest version of **OsCabaOrganiza** directly from our [releases page](https://github.com/gabaoun/OsCabaOrganiza/releases).
 
----
-
-## ⚖️ Design Decisions
-
-- **Threading over async**
-  - Chosen due to I/O-bound operations (file system access)
-
-- **JSON for transaction logs**
-  - Simple and transparent approach for tracking operations
-
-- **Modular structure**
-  - Keeps core logic independent from interface layer
-
----
-
-## ⚠️ Limitations
-
-- Not optimized for distributed environments  
-- File operations depend on OS-level performance  
-- Undo/Redo system is local and not persistent across environments
+### How to use the Executable:
+1. Download the `OsCabaOrganiza.exe` file.
+2. Ensure that the `config.json` file is in the same folder as the executable (optional, but recommended for customizing rules).
+3. Run the file by double-clicking or via terminal:
+   ```bash
+   ./OsCabaOrganiza.exe
+   ```
 
 ---
 
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Python 3.13 or higher
+- Python 3.14 or higher
 - Git
 
 ### Installation
@@ -112,10 +96,10 @@ To create a standalone executable (no Python installation required for the end-u
 
 ```bash
 # Build the binary using PyInstaller
-pyinstaller --onefile --windowed main.py
+python -m PyInstaller --onefile --name OsCabaOrganiza main.py
 
 # Run the generated executable
-./dist/main
+./dist/OsCabaOrganiza.exe
 ```
 
 ---
@@ -130,9 +114,7 @@ OsCabaOrganiza/
 │   ├── __init__.py
 │   ├── core.py            # Business logic (Organizer, UndoManager, Sentinel)
 │   ├── cli.py             # Command-line entry point and argument parsing
-│   ├── ui.py              # UI rendering logic (Rich integration)
-│   ├── utils.py           # Helper functions (Logging, Input handling)
-│   └── config.py          # Configuration loader and validator
+│   └── utils.py           # Helper functions (Logging, Input handling)
 ├── tests/                 # Unit and integration tests
 ├── config.json            # User configuration (Mappings, settings)
 ├── main.py                # Application bootstrapper
