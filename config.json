@@ -1,12 +1,18 @@
 {
     "extensions": {
-        "Images": [".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tiff", ".svg", ".webp", ".ico", ".raw"],
-        "Documents": [".pdf", ".docx", ".doc", ".txt", ".xlsx", ".xls", ".pptx", ".csv", ".md", ".epub"],
-        "Videos": [".mp4", ".avi", ".mov", ".mkv", ".wmv", ".flv", ".webm"],
-        "Music": [".mp3", ".wav", ".aac", ".flac", ".ogg", ".wma"],
-        "Archives": [".zip", ".rar", ".7z", ".tar.gz", ".iso", ".tgz"],
-        "Scripts_Code": [".py", ".js", ".html", ".css", ".json", ".java", ".cpp", ".php", ".ts", ".sql"],
-        "Executables": [".exe", ".msi", ".dmg", ".sh", ".bat", ".apk"]
+        "Images": ["jpg","jpeg","png","gif","bmp","webp","svg","tiff","ico","heic","raw","psd","ai"],
+        "Audio": ["mp3","wav","aac","flac","ogg","m4a","wma","aiff","mid"],
+        "Video": ["mp4","mkv","avi","mov","wmv","flv","webm","mpeg","mpg","m4v","3gp"],
+        "Documents": ["pdf","doc","docx","txt","rtf","odt","pages","tex"],
+        "Data": ["xls","xlsx","csv","json","xml","yaml","yml","parquet"],
+        "Archives": ["zip","rar","7z","tar","gz","bz2","xz"],
+        "Executables": ["exe","msi","bat","sh","bin","apk","app","dll"],
+        "Code": ["py","js","ts","cpp","c","java","go","rs","php","rb","swift","kt"],
+        "Web": ["html","css","jsx","tsx"],
+        "Database": ["sql","db","sqlite","sqlite3","mdb","accdb"],
+        "Config": ["log","ini","env","cfg","conf"],
+        "Ebooks": ["epub","mobi","azw"],
+        "Misc": ["iso","img","dmg","torrent","bak","tmp"]
     },
     "others_folder": "Others"
 }

@@ -7,7 +7,7 @@ from datetime import datetime
 from typing import Dict, List, Optional, Callable
 from concurrent.futures import ThreadPoolExecutor
 from threading import Lock
-from .utils import setup_logger, check_esc_pressed, flush_input
+from .utils import setup_logger, check_esc_pressed, flush_input, console
 
 logger = setup_logger()
 
@@ -124,7 +124,9 @@ class Organizer:
         self.extension_lookup: Dict[str, str] = {}
         for folder, extensions in config.get("extensions", {}).items():
             for ext in extensions:
-                self.extension_lookup[ext.lower()] = folder
+                # Normalize extension (no dot, lower case)
+                clean_ext = ext.lower().replace(".", "")
+                self.extension_lookup[clean_ext] = folder
 
         # Undo Manager will be initialized when we know the target directory
         self.undo_manager: Optional[UndoManager] = None
@@ -133,7 +135,9 @@ class Organizer:
         self.stats = {"moved": 0, "errors": 0, "bytes": 0, "extracted": 0}
 
     def _find_folder(self, extension: str) -> str:
-        return self.extension_lookup.get(extension.lower(), self.others_folder)
+        # Normalize incoming extension
+        clean_ext = extension.lower().replace(".", "")
+        return self.extension_lookup.get(clean_ext, self.others_folder)
 
     def _get_archive_extensions(self) -> List[str]:
         """Returns list of extensions supported by shutil."""
@@ -157,7 +161,9 @@ class Organizer:
             output_folder = base_directory / folder_name
             
             if self.dry_run:
-                return f"[SIMULATION] Would decompress: '{file_path.name}' to '{folder_name}/'"
+                msg = f"[SIMULATION] Would decompress: '{file_path.name}' to '{folder_name}/'"
+                logger.debug(msg)
+                return msg
 
             # Create destination folder
             output_folder.mkdir(parents=True, exist_ok=True)
@@ -185,10 +191,12 @@ class Organizer:
             target_folder = base_directory / folder_name
             file_size = file_path.stat().st_size
             
-            logger.debug(f"Moving {file_path.name} to {folder_name}")
+            if self.dry_run:
+                msg = f"[SIMULATION] Would move: '{file_path.name}' to '{folder_name}'"
+                logger.debug(msg)
+                return msg
 
-            if not self.dry_run:
-                target_folder.mkdir(parents=True, exist_ok=True)
+            target_folder.mkdir(parents=True, exist_ok=True)
 
             with self.lock:
                 destination_path = target_folder / file_path.name
@@ -196,9 +204,6 @@ class Organizer:
                 while destination_path.exists():
                     destination_path = target_folder / f"{file_path.stem}_{counter}{file_path.suffix}"
                     counter += 1
-
-            if self.dry_run:
-                return f"[SIMULATION] Would move: '{file_path.name}'"
             
             # Execute Move
             src_str = str(file_path.resolve())
@@ -258,6 +263,9 @@ class Organizer:
                     return
 
                 res = future.result()
+                if self.dry_run:
+                    console.print(f"[yellow]{res}[/yellow]")
+                
                 if progress_callback:
                     progress_callback()
 
@@ -286,6 +294,9 @@ class Organizer:
                     return
 
                 res = future.result()
+                if self.dry_run:
+                    console.print(f"[yellow]{res}[/yellow]")
+
                 if progress_callback:
                     progress_callback()
 
@@ -321,6 +332,9 @@ class Organizer:
                     return
 
                 res = future.result()
+                if self.dry_run:
+                    console.print(f"[yellow]{res}[/yellow]")
+
                 if progress_callback:
                     progress_callback()
 
