@@ -5,7 +5,7 @@
 [![Code Style](https://img.shields.io/badge/Code_Style-PEP_8-green.svg)](https://www.python.org/dev/peps/pep-0008/)
 [![Build Status](https://img.shields.io/badge/Build-Passing-brightgreen.svg)]()
 
-> ** Developed by Gabriel Penha (Gabaoun)**
+> **Developed by Gabriel Penha (Gabaoun)**
 
 ---
 
