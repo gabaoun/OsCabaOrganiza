@@ -55,6 +55,7 @@ This project was built to explore concurrency, modular design, and practical sys
 You can download the latest version of **OsCabaOrganiza** directly from our [releases page](https://github.com/gabaoun/OsCabaOrganiza/releases).
 
 ### How to use the Executable:
+
 1. Download the `OsCabaOrganiza.exe` file.
 2. Ensure that the `config.json` file is in the same folder as the executable (optional, but recommended for customizing rules).
 3. Run the file by double-clicking or via terminal:
@@ -67,6 +68,7 @@ You can download the latest version of **OsCabaOrganiza** directly from our [rel
 ## Quick Start
 
 ### Prerequisites
+
 - Python 3.14 or higher
 - Git
 
@@ -92,6 +94,7 @@ python main.py
 ```
 
 ### Building for Production
+
 To create a standalone executable (no Python installation required for the end-user):
 
 ```bash
@@ -125,10 +128,12 @@ OsCabaOrganiza/
 ---
 
 ## 📬 Contact:
+
 **Gabriel Penha (Gabaoun)**
+
 - Email: [penhagabriellima@gmail.com]
 - GitHub: [github.com/gabaoun]
-  
+
 ---
 
 ## 📄 License
