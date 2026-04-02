@@ -132,7 +132,7 @@ OsCabaOrganiza/
 **Gabriel Penha (Gabaoun)**
 
 - Email: [penhagabriellima@gmail.com]
-- GitHub: [github.com/gabaoun]
+- [GitHub](https://github.com/gabaoun)
 
 ---
 
