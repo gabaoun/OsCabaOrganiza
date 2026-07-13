@@ -11,10 +11,10 @@
 
 > ## Overview
 
-**OsCabaOrganiza** is a command-line application built to simplify file system organization.  
-It focuses on handling large volumes of files efficiently while maintaining predictable behavior and data safety.
+**OsCabaOrganiza** is a high-performance command-line application engineered to automate file system organization.  
+It is built to process large volumes of files concurrently while maintaining transactional safety and predictable behavior.
 
-This project was built to explore concurrency, modular design, and practical system-level programming in Python.
+This project implements robust concurrency models, directory-watching hooks, and a transactional command system (undo/redo) in Python.
 
 ---
 
