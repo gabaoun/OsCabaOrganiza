@@ -1,141 +1,25 @@
-# OsCabaOrganiza
+# OsCabaOrganiza: Concurrent File System Engine
 
-[![Python](https://img.shields.io/badge/Python-3.13+-blue.svg)](https://www.python.org/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Code Style](https://img.shields.io/badge/Code_Style-PEP_8-green.svg)](https://www.python.org/dev/peps/pep-0008/)
-[![Build Status](https://img.shields.io/badge/Build-Passing-brightgreen.svg)]()
+<p align="left">
+  <img src="https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white" />
+  <img src="https://img.shields.io/badge/Code_Style-PEP_8-green.svg?style=for-the-badge" />
+</p>
 
-> **Developed by Gabriel Penha (Gabaoun)**
+**OsCabaOrganiza** is a high-performance command-line application engineered to automate and optimize file system organization. Built to process massive volumes of files concurrently, it ensures transactional safety and predictable behavior during OS-level operations.
 
----
+## ⚙️ Core Technical Features
 
-> ## Overview
+- **Concurrent Batch Processing:** Leverages Python's multiprocessing and threading models to handle large-scale data ingestion and sorting in parallel.
+- **Transactional State Management:** Implements a robust command system (undo/redo) that tracks file operations, allowing developers to safely revert state changes and avoid data corruption.
+- **Real-time Event Hooks:** Uses `watchdog` to monitor directory events at the OS level, triggering automated workflows instantly upon file creation.
+- **Data Extraction:** Automatically detects, verifies, and extracts compressed archives (`.zip`, `.tar`, `.gz`) within the pipeline.
 
-**OsCabaOrganiza** is a high-performance command-line application engineered to automate file system organization.  
-It is built to process large volumes of files concurrently while maintaining transactional safety and predictable behavior.
-
-This project implements robust concurrency models, directory-watching hooks, and a transactional command system (undo/redo) in Python.
-
----
-
-## ⚙️ Features
-
-- **File Organization**
-  - Sort files by extension or creation date
-  - Configurable rules via `config.json`
-
-- **Batch Processing**
-  - Handles large volumes of files using parallel execution
-
-- **Real-time Monitoring**
-  - Watches directories and processes new files automatically
-
-- **Undo Support**
-  - Tracks operations and allows reverting changes safely
-
-- **Archive Handling**
-  - Detects and extracts compressed files (`.zip`, `.tar`, `.gz`)
-
-- **CLI Interface**
-  - Structured output with progress feedback
-
----
-
-## Tech Stack
-
-- **Python 3.14**
-- **Rich** (CLI output)
-- **Watchdog** (file system events)
-- **Unittest** (testing)
-
----
-
-## Download
-
-You can download the latest version of **OsCabaOrganiza** directly from our [releases page](https://github.com/gabaoun/OsCabaOrganiza/releases).
-
-### How to use the Executable:
-
-1. Download the `OsCabaOrganiza.exe` file.
-2. Ensure that the `config.json` file is in the same folder as the executable (optional, but recommended for customizing rules).
-3. Run the file by double-clicking or via terminal:
-   ```bash
-   ./OsCabaOrganiza.exe
-   ```
-
----
-
-## Quick Start
-
-### Prerequisites
-
-- Python 3.14 or higher
-- Git
-
-### Installation
+## 🚀 Execution
 
 ```bash
-# 1. Clone the repository
-git clone https://github.com/gabaoun/OsCabaOrganiza.git
-cd OsCabaOrganiza
-
-# 2. Create a virtual environment (Recommended)
-python -m venv venv
-# Windows
-venv\Scripts\activate
-# Linux/Mac
-source venv/bin/activate
-
-# 3. Install dependencies
+# Install dependencies
 pip install -r requirements.txt
 
-# 4. Run the application
-python main.py
+# Run the CLI tool
+python main.py --help
 ```
-
-### Building for Production
-
-To create a standalone executable (no Python installation required for the end-user):
-
-```bash
-# Build the binary using PyInstaller
-python -m PyInstaller --onefile --name OsCabaOrganiza main.py
-
-# Run the generated executable
-./dist/OsCabaOrganiza.exe
-```
-
----
-
-## Project Architecture
-
-The codebase follows a modular structure to ensure scalability and ease of testing.
-
-```plaintext
-OsCabaOrganiza/
-├── app/
-│   ├── __init__.py
-│   ├── core.py            # Business logic (Organizer, UndoManager, Sentinel)
-│   ├── cli.py             # Command-line entry point and argument parsing
-│   └── utils.py           # Helper functions (Logging, Input handling)
-├── tests/                 # Unit and integration tests
-├── config.json            # User configuration (Mappings, settings)
-├── main.py                # Application bootstrapper
-├── requirements.txt       # Project dependencies
-└── README.md              # Project documentation
-```
-
----
-
-## 📬 Contact:
-
-**Gabriel Penha (Gabaoun)**
-
-- Email: [penhagabriellima@gmail.com]
-- [GitHub](https://github.com/gabaoun)
-
----
-
-## 📄 License
-
-Distributed under the MIT License. See `LICENSE` for more information.
