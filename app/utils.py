@@ -23,8 +23,8 @@ except ImportError:
 
 def check_esc_pressed() -> bool:
     """Checks if ESC was pressed (Windows Only)."""
-    if msvcrt and msvcrt.kbhit():
-        ch = msvcrt.getch()
+    if msvcrt and msvcrt.kbhit():  # type: ignore[attr-defined]  # msvcrt stub is Windows-only; guarded at runtime above
+        ch = msvcrt.getch()  # type: ignore[attr-defined]
         if ch == b'\x1b':
             return True
     return False
@@ -32,8 +32,8 @@ def check_esc_pressed() -> bool:
 def flush_input():
     """Flushes input buffer (Windows Only)."""
     if msvcrt:
-        while msvcrt.kbhit():
-            msvcrt.getch()
+        while msvcrt.kbhit():  # type: ignore[attr-defined]  # msvcrt stub is Windows-only; guarded at runtime above
+            msvcrt.getch()  # type: ignore[attr-defined]
 
 def setup_logger(verbose: bool = False) -> logging.Logger:
     logger = logging.getLogger("OsCabaOrganiza")
