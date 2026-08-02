@@ -1,20 +1,18 @@
 import argparse
-import sys
 import time
 from pathlib import Path
-from typing import Optional
 from tkinter import Tk, filedialog
 
 from rich.panel import Panel
-from rich.progress import Progress, SpinnerColumn, BarColumn, TextColumn
-from rich.prompt import Prompt, Confirm
+from rich.progress import BarColumn, Progress, SpinnerColumn, TextColumn
+from rich.prompt import Confirm, Prompt
 from rich.table import Table
-from rich.live import Live
 
 from .core import Organizer
-from .utils import load_config, setup_logger, console, print_banner, get_app_path
+from .utils import console, load_config, print_banner, setup_logger
 
-def get_directory_gui() -> Optional[Path]:
+
+def get_directory_gui() -> Path | None:
     root = Tk()
     root.withdraw()
     path = filedialog.askdirectory(title="Select directory to organize")
@@ -92,7 +90,7 @@ def main():
     args = parser.parse_args()
     
     # Setup
-    logger = setup_logger(verbose=False)
+    setup_logger(verbose=False)
     config = load_config()
     organizer = Organizer(config)
     

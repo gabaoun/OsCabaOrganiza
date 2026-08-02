@@ -1,10 +1,11 @@
-import unittest
 import shutil
 import tempfile
+import unittest
 import zipfile
-import os
 from pathlib import Path
+
 from app.core import Organizer
+
 
 class TestDecompression(unittest.TestCase):
 

@@ -1,13 +1,12 @@
-import unittest
 import shutil
 import tempfile
-import os
+import unittest
 from pathlib import Path
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 # Import from package
 from app.core import Organizer
-from app.utils import load_config
+
 
 class TestOrganizer(unittest.TestCase):
 
@@ -117,15 +116,15 @@ class TestOrganizer(unittest.TestCase):
             p.stat.return_value.st_ctime = 1000000 
             dummy_files.append(p)
         
-        # Mock _get_files to return our fake files
-        with patch.object(self.organizer, '_get_files', return_value=dummy_files):
-            # Mock _move_single_file to avoid real IO
-            with patch.object(self.organizer, '_move_single_file', return_value="Success") as mock_move:
-                
-                self.organizer.organize_by_extension(Path('.'))
-                
-                # Check if abort message was logged
-                mock_logger.warning.assert_called_with("Operation aborted by user (ESC pressed).")
+        # Mock _get_files and _move_single_file (avoid real IO) together
+        with (
+            patch.object(self.organizer, '_get_files', return_value=dummy_files),
+            patch.object(self.organizer, '_move_single_file', return_value="Success"),
+        ):
+            self.organizer.organize_by_extension(Path('.'))
+
+            # Check if abort message was logged
+            mock_logger.warning.assert_called_with("Operation aborted by user (ESC pressed).")
 
 if __name__ == '__main__':
     unittest.main()

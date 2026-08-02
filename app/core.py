@@ -1,20 +1,21 @@
-import shutil
-import os
-import time
 import json
-from pathlib import Path
-from datetime import datetime
-from typing import Dict, List, Optional, Callable
+import os
+import shutil
+import time
+from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime, timezone
+from pathlib import Path
 from threading import Lock
-from .utils import setup_logger, check_esc_pressed, flush_input, console
+
+from .utils import check_esc_pressed, console, flush_input, setup_logger
 
 logger = setup_logger()
 
 # Try to import watchdog, but don't fail if not available
 try:
-    from watchdog.observers import Observer
     from watchdog.events import FileSystemEventHandler
+    from watchdog.observers import Observer
     HAS_WATCHDOG = True
 except ImportError:
     HAS_WATCHDOG = False
@@ -23,7 +24,7 @@ class UndoManager:
     """Manages operation history to allow undo."""
     def __init__(self, history_file: Path):
         self.history_file = history_file
-        self.history: List[Dict] = []
+        self.history: list[dict] = []
         self._load_history()
 
     def _load_history(self):
@@ -31,7 +32,8 @@ class UndoManager:
             try:
                 with open(self.history_file, 'r', encoding='utf-8') as f:
                     self.history = json.load(f)
-            except Exception:
+            except (OSError, json.JSONDecodeError) as e:
+                logger.warning(f"Could not load undo/redo history, starting fresh: {e}")
                 self.history = []
 
     def register_move(self, src: str, dst: str):
@@ -40,7 +42,7 @@ class UndoManager:
             "action": "move",
             "src": src,
             "dst": dst,
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now(timezone.utc).isoformat()
         })
         self._save_history()
 
@@ -48,10 +50,10 @@ class UndoManager:
         try:
             with open(self.history_file, 'w', encoding='utf-8') as f:
                 json.dump(self.history, f, indent=2)
-        except Exception:
-            pass
+        except OSError as e:
+            logger.warning(f"Could not save undo/redo history: {e}")
 
-    def undo_last_session(self) -> List[str]:
+    def undo_last_session(self) -> list[str]:
         """Undoes registered operations and clears history."""
         results = []
         # Process from last to first (LIFO)
@@ -80,7 +82,7 @@ class UndoManager:
                             dst.parent.rmdir()
                         except OSError:
                             pass
-                    except Exception as e:
+                    except Exception as e:  # noqa: BLE001 - per-file boundary, must not abort the whole batch
                         results.append(f"Error restoring {dst.name}: {e}")
                 else:
                     results.append(f"File not found to restore: {dst}")
@@ -114,14 +116,14 @@ class SentinelHandler(FileSystemEventHandler):
         self.organizer.process_single_file_event(file_path, self.directory)
 
 class Organizer:
-    def __init__(self, config: Dict, dry_run: bool = False):
+    def __init__(self, config: dict, dry_run: bool = False):
         self.config = config
         self.others_folder = config.get("others_folder", "Others")
         self.dry_run = dry_run
         self.lock = Lock()
         
         # Lookup O(1)
-        self.extension_lookup: Dict[str, str] = {}
+        self.extension_lookup: dict[str, str] = {}
         for folder, extensions in config.get("extensions", {}).items():
             for ext in extensions:
                 # Normalize extension (no dot, lower case)
@@ -129,7 +131,7 @@ class Organizer:
                 self.extension_lookup[clean_ext] = folder
 
         # Undo Manager will be initialized when we know the target directory
-        self.undo_manager: Optional[UndoManager] = None
+        self.undo_manager: UndoManager | None = None
         
         # Statistics for report
         self.stats = {"moved": 0, "errors": 0, "bytes": 0, "extracted": 0}
@@ -139,7 +141,7 @@ class Organizer:
         clean_ext = extension.lower().replace(".", "")
         return self.extension_lookup.get(clean_ext, self.others_folder)
 
-    def _get_archive_extensions(self) -> List[str]:
+    def _get_archive_extensions(self) -> list[str]:
         """Returns list of extensions supported by shutil."""
         extensions = []
         for format_name, exts, description in shutil.get_unpack_formats():
@@ -151,11 +153,7 @@ class Organizer:
         try:
             # Handle double extensions like .tar.gz
             folder_name = file_path.stem
-            if file_path.suffix.lower() == '.gz' and Path(folder_name).suffix.lower() == '.tar':
-                folder_name = Path(folder_name).stem
-            elif file_path.suffix.lower() == '.bz2' and Path(folder_name).suffix.lower() == '.tar':
-                folder_name = Path(folder_name).stem
-            elif file_path.suffix.lower() == '.xz' and Path(folder_name).suffix.lower() == '.tar':
+            if file_path.suffix.lower() == '.gz' and Path(folder_name).suffix.lower() == '.tar' or file_path.suffix.lower() == '.bz2' and Path(folder_name).suffix.lower() == '.tar' or file_path.suffix.lower() == '.xz' and Path(folder_name).suffix.lower() == '.tar':
                 folder_name = Path(folder_name).stem
 
             output_folder = base_directory / folder_name
@@ -177,10 +175,10 @@ class Organizer:
             
             return f"Decompressed: {file_path.name} -> {folder_name}/"
             
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001 - per-file boundary, must not abort the whole batch
             with self.lock:
                 self.stats["errors"] += 1
-            return f"ERROR decompressing {file_path.name}: {str(e)}"
+            return f"ERROR decompressing {file_path.name}: {e!s}"
 
     def _move_single_file(self, file_path: Path, folder_name: str, base_directory: Path) -> str:
         """Moves file, updates stats and registers undo."""
@@ -221,10 +219,10 @@ class Organizer:
                 
             return f"Success: {file_path.name}"
             
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001 - per-file boundary, must not abort the whole batch
             with self.lock:
                 self.stats["errors"] += 1
-            return f"ERROR: {str(e)}"
+            return f"ERROR: {e!s}"
 
     def process_single_file_event(self, file_path: Path, base_directory: Path):
         """Processes a single file (used by Sentinel)."""
@@ -242,7 +240,7 @@ class Organizer:
             if f.is_file() and f.name != "main.py" and f.name != "undo_log.json":
                 yield f
 
-    def organize_by_extension(self, directory: Path, recursive: bool = False, remove_empty: bool = False, progress_callback: Callable = None) -> None:
+    def organize_by_extension(self, directory: Path, recursive: bool = False, remove_empty: bool = False, progress_callback: Callable | None = None) -> None:
         self.undo_manager = UndoManager(directory / "undo_log.json")
         self.stats = {"moved": 0, "errors": 0, "bytes": 0, "extracted": 0} # Reset stats
         
@@ -259,6 +257,7 @@ class Organizer:
             for future in futures:
                 if check_esc_pressed():
                     logger.warning("Operation aborted by user (ESC pressed).")
+                    flush_input()
                     executor.shutdown(wait=False, cancel_futures=True)
                     return
 
@@ -272,7 +271,7 @@ class Organizer:
         if remove_empty:
             self._remove_empty_folders(directory)
 
-    def organize_by_date(self, directory: Path, recursive: bool = False, remove_empty: bool = False, progress_callback: Callable = None) -> None:
+    def organize_by_date(self, directory: Path, recursive: bool = False, remove_empty: bool = False, progress_callback: Callable | None = None) -> None:
         self.undo_manager = UndoManager(directory / "undo_log.json")
         self.stats = {"moved": 0, "errors": 0, "bytes": 0, "extracted": 0}
 
@@ -283,13 +282,14 @@ class Organizer:
         with ThreadPoolExecutor() as executor:
             futures = []
             for file_path in files:
-                created_at = datetime.fromtimestamp(file_path.stat().st_ctime)
+                created_at = datetime.fromtimestamp(file_path.stat().st_ctime)  # noqa: DTZ006 - intentionally local time, folders are named by the user's local calendar date
                 folder = created_at.strftime('%d-%m-%Y')
                 futures.append(executor.submit(self._move_single_file, file_path, folder, directory))
             
             for future in futures:
                 if check_esc_pressed():
                     logger.warning("Operation aborted by user (ESC pressed).")
+                    flush_input()
                     executor.shutdown(wait=False, cancel_futures=True)
                     return
 
@@ -303,7 +303,7 @@ class Organizer:
         if remove_empty:
             self._remove_empty_folders(directory)
 
-    def decompress_files(self, directory: Path, recursive: bool = False, progress_callback: Callable = None) -> None:
+    def decompress_files(self, directory: Path, recursive: bool = False, progress_callback: Callable | None = None) -> None:
         """Batch decompresses files."""
         self.stats = {"moved": 0, "errors": 0, "bytes": 0, "extracted": 0}
         
@@ -328,6 +328,7 @@ class Organizer:
             for future in futures:
                 if check_esc_pressed():
                     logger.warning("Operation aborted by user (ESC pressed).")
+                    flush_input()
                     executor.shutdown(wait=False, cancel_futures=True)
                     return
 
@@ -372,7 +373,7 @@ class Organizer:
             observer.stop()
             observer.join()
 
-    def undo_operation(self, directory: Path) -> List[str]:
+    def undo_operation(self, directory: Path) -> list[str]:
         """Wrapper for undo manager."""
         mgr = UndoManager(directory / "undo_log.json")
         return mgr.undo_last_session()

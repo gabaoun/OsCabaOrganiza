@@ -1,9 +1,9 @@
 import json
 import logging
-import os
 import sys
 from pathlib import Path
-from typing import Dict, List, Any
+from typing import Any
+
 from rich.console import Console
 
 # Instância global do Console do Rich para UI avançada
@@ -13,7 +13,7 @@ console = Console()
 try:
     import msvcrt
 except ImportError:
-    msvcrt = None
+    msvcrt = None  # type: ignore[assignment]  # msvcrt is Windows-only, this is the standard cross-platform fallback
 
 try:
     from colorama import init
@@ -65,7 +65,7 @@ def get_bundle_path() -> Path:
         return Path(sys._MEIPASS)
     return get_app_path()
 
-def load_config(config_name: str = "config.json") -> Dict[str, Any]:
+def load_config(config_name: str = "config.json") -> dict[str, Any]:
     """Loads configuration with fallback to bundled config."""
     # 1. Try next to executable
     app_path = get_app_path()
@@ -98,11 +98,12 @@ def load_config(config_name: str = "config.json") -> Dict[str, Any]:
             config["extensions"] = normalized_extensions
             
         return config
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001 - config load falls back to defaults on any failure
         console.print(f"[red]Error reading {config_name}: {e}[/red]")
         return default_config
 
 from rich.panel import Panel
+
 
 def print_banner():
     """Prints styled ASCII art banner."""
